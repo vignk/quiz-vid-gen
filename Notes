@@ -1,0 +1,16 @@
+## Notes
+
+The YouTube upload guide requires OAuth 2.0 authorization for uploads, and the thumbnail endpoint is a separate API call after the main upload returns a `videoId`. [2][3] Render supports Docker-based web services, so this file fits the Docker deployment path you already have. [1]
+
+For your quiz format, this version should work well for mobile-first vertical content because it uses 1080x1920 output, short timed clips, and a simple custom thumbnail structure that follows YouTube’s guidance to keep thumbnails readable and visually distinct. [4][3]
+
+Would you like the next message to include the full matching:
+- `requirements.txt`
+- `Dockerfile`
+- `local_oauth.py`
+- `README.md`
+- and sample `curl` command for `/run`?
+
+Yes, include the requirements, Dockerfile, and the rest of files
+
+Yes — below is the full Render-ready file set. Render supports Docker-based web services, Google Sheets and Drive access can be done with a service account, and YouTube uploads use the YouTube Data API with OAuth 2.0 credentials. [1][2][3]
