@@ -1,0 +1,12 @@
+## Files
+
+Create these files in one folder:
+
+- `app.py`
+- `requirements.txt`
+- `Dockerfile`
+- `.dockerignore`
+- `render.yaml`
+- `local_oauth.py`
+- `.env.example`
+- `README.md` [1][2]
