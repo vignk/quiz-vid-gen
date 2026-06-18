@@ -197,10 +197,20 @@ def make_question_images(idx: int, row: QuizRow, width: int, height: int, waterm
     return base_path, answer_path
 
 
+##def run_ffmpeg(cmd):
+    ##subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 def run_ffmpeg(cmd):
-    subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    if result.returncode != 0:
+        print("FFmpeg stderr:", result.stderr)
+        raise subprocess.CalledProcessError(result.returncode, cmd, result.stderr)
+        
 def image_to_clip(image_path: Path, duration: int, out_path: Path):
     run_ffmpeg([
         "ffmpeg", "-y",
