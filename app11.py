@@ -168,7 +168,7 @@ def image_to_clip(image_path: Path, duration: int, out_path: Path):
         "-loop", "1",
         "-i", str(image_path),
         "-t", str(duration),
-        "-vf", "fps=30,format=yuv420p",
+        "-vf", "fps=24,format=yuv420p",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
         str(out_path)
