@@ -1,8 +1,8 @@
 ## requirements.txt
 
-These dependencies cover FastAPI, Google APIs, Sheets access, and image generation in Python. [4][3]
+##These dependencies cover FastAPI, Google APIs, Sheets access, and image generation in Python. [4][3]
 
-```txt
+##```txt
 fastapi==0.116.1
 uvicorn[standard]==0.35.0
 google-api-python-client==2.175.0
@@ -13,4 +13,4 @@ gspread==6.2.1
 pillow==11.3.0
 pydantic==2.11.7
 python-multipart==0.0.20
-```
+##```
