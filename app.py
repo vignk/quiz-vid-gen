@@ -472,17 +472,6 @@ async def generate_video(
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 
-
-@app.get("/download/{filename}")
-def download_file(filename: str):
-    file_path = OUT_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(
-        path=str(file_path),
-        media_type="video/mp4",
-        filename=filename
-    )
 @app.get("/videos")
 def list_videos():
     files = []
