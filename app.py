@@ -17,17 +17,58 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from PIL import Image, ImageDraw, ImageFont
 
-app = FastAPI(title="Quiz Video Generator")
+from pathlib import Path
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
+import os
 
-BASE_DIR = Path(__file__).parent
-TMP_DIR = BASE_DIR / "tmp"
+app = FastAPI()
+
+BASE_DIR = Path(__file__).resolve().parent
 OUT_DIR = BASE_DIR / "output"
+TMP_DIR = BASE_DIR / "tmp"
 
-TMP_DIR.mkdir(exist_ok=True)
-OUT_DIR.mkdir(exist_ok=True)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+TMP_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.get("/videos")
+def list_videos():
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    files = []
+    for p in sorted(OUT_DIR.glob("*.mp4")):
+        if p.is_file():
+            files.append({
+                "filename": p.name,
+                "size_bytes": p.stat().st_size,
+                "download_url": f"/download?filename={p.name}"
+            })
+    return {
+        "output_dir": str(OUT_DIR),
+        "count": len(files),
+        "videos": files
+    }
+
+@app.get("/download")
+def download_video(filename: str = Query(...)):
+    safe_name = Path(filename).name
+    file_path = OUT_DIR / safe_name
+
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found: {safe_name}")
+
+    return FileResponse(
+        path=str(file_path),
+        media_type="video/mp4",
+        filename=safe_name
+    )
 
 app.mount("/files", StaticFiles(directory=str(OUT_DIR)), name="files")
 
+from datetime import datetime
+
+def final_output_path():
+    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    return OUT_DIR / f"quiz_video_{ts}.mp4"
 
 class QuizRow(BaseModel):
     question: str
@@ -210,6 +251,7 @@ logger = logging.getLogger("quiz-video")
 
 ##def run_ffmpeg(cmd):
     ##subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+final_video = final_output_path()
 
 def run_ffmpeg(cmd):
     logger.info("Running FFmpeg command: %s", " ".join(cmd))
@@ -244,7 +286,7 @@ def image_to_clip(image_path: Path, duration: int, out_path: Path):
         "-preset", "veryfast",
         "-crf", "28",
         "-pix_fmt", "yuv420p",
-        str(out_path)
+        str(final_video)
     ])
 
 
