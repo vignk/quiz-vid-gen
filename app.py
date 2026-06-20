@@ -198,6 +198,13 @@ def make_question_images(idx: int, row: QuizRow, width: int, height: int, waterm
     render(True).save(answer_path, quality=90)
     return base_path, answer_path
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    stream=sys.stdout,
+    force=True,
+)
+logger = logging.getLogger("quiz-video")
 
 ##def run_ffmpeg(cmd):
     ##subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
