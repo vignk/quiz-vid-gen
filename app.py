@@ -6,6 +6,8 @@ import tempfile
 import uuid
 import logging 
 import sys
+from fastapi.responses import FileResponse
+from fastapi import Query
 from pathlib import Path
 from typing import List
 
@@ -481,3 +483,12 @@ def download_file(filename: str):
         media_type="video/mp4",
         filename=filename
     )
+@app.get("/videos")
+def list_videos():
+    files = []
+    for p in OUT_DIR.glob("*.mp4"):
+        files.append({
+            "filename": p.name,
+            "size_bytes": p.stat().st_size
+        })
+    return {"videos": files}
