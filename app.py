@@ -4,6 +4,8 @@ import shutil
 import subprocess
 import tempfile
 import uuid
+import logging 
+import sys
 from pathlib import Path
 from typing import List
 
@@ -201,15 +203,26 @@ def make_question_images(idx: int, row: QuizRow, width: int, height: int, waterm
     ##subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def run_ffmpeg(cmd):
+    logger.info("Running FFmpeg command: %s", " ".join(cmd))
     result = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
     )
+
+    logger.info("FFmpeg return code: %s", result.returncode)
+
+    if result.stdout:
+        logger.info("FFmpeg stdout:\n%s", result.stdout[-4000:])
+
+    if result.stderr:
+        logger.error("FFmpeg stderr:\n%s", result.stderr[-8000:])
+
     if result.returncode != 0:
-        print("FFmpeg stderr:", result.stderr)
-        raise subprocess.CalledProcessError(result.returncode, cmd, result.stderr)
+        raise RuntimeError(
+            f"FFmpeg failed with code {result.returncode}\n{result.stderr[-4000:]}"
+        )
         
 def image_to_clip(image_path: Path, duration: int, out_path: Path):
     run_ffmpeg([
