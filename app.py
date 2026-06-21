@@ -272,12 +272,16 @@ def question_to_clip(base_png: Path, answer_png: Path, duration: int, reveal_aft
     ])
 
 
-
 def concat_clips(clips: List[Path], out_path: Path):
     list_file = out_path.parent / "concat.txt"
+
     content = "
-".join(f"file '{clip.resolve().as_posix()}'" for clip in clips) + "
+".join(
+        f"file '{clip.resolve().as_posix()}'"
+        for clip in clips
+    ) + "
 "
+
     list_file.write_text(content, encoding="utf-8")
 
     run_ffmpeg([
