@@ -174,18 +174,19 @@ def image_to_clip(image_path: Path, duration: int, out_path: Path):
         str(out_path)
     ])
 
-
-def question_to_clip(base_png: Path, answer_png: Path, duration: int, reveal_after: int, width: int, height: int, out_path: Path):
-    fontfile = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-    countdown_expr = f"%{{eif\\:{duration}-t\\:d}}"
-
+def question_to_clip(
+    base_png: Path,
+    answer_png: Path,
+    duration: int,
+    reveal_after: int,
+    width: int,
+    height: int,
+    out_path: Path,
+):
     filter_complex = (
-        f"[0:v]scale={width}:{height},zoompan=z='min(zoom+0.0008,1.08)':d=1:s={width}x{height}:fps=30[bg];"
-        f"[1:v]scale={width}:{height}[ans];"
-        f"[bg][ans]overlay=0:0:enable='gte(t,{reveal_after})',"
-        f"drawtext=fontfile={fontfile}:text='{countdown_expr}':"
-        f"fontcolor=white:fontsize=70:box=1:boxcolor=black@0.45:boxborderw=16:"
-        f"x=(w-text_w)/2:y=130"
+        f"[0:v]scale={width}:{height},fps=24[bg];"
+        f"[1:v]scale={width}:{height},fps=24[ans];"
+        f"[bg][ans]overlay=0:0:enable='gte(t,{reveal_after})'"
     )
 
     run_ffmpeg([
@@ -195,10 +196,11 @@ def question_to_clip(base_png: Path, answer_png: Path, duration: int, reveal_aft
         "-t", str(duration),
         "-filter_complex", filter_complex,
         "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "28",
         "-pix_fmt", "yuv420p",
         str(out_path)
     ])
-
 
 def concat_clips(clips: List[Path], out_path: Path):
     list_file = out_path.parent / "concat.txt"
