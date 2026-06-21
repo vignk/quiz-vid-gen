@@ -247,8 +247,7 @@ def concat_clips(clips: List[Path], out_path: Path):
     list_file = out_path.parent / "concat.txt"
     with list_file.open("w", encoding="utf-8") as f:
         for clip in clips:
-            f.write(f"file '{clip.as_posix()}'
-")
+            f.write(f"file '{clip.as_posix()}'")
 
     run_ffmpeg([
         "ffmpeg", "-y",
