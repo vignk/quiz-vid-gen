@@ -272,13 +272,13 @@ def question_to_clip(base_png: Path, answer_png: Path, duration: int, reveal_aft
     ])
 
 
+
 def concat_clips(clips: List[Path], out_path: Path):
     list_file = out_path.parent / "concat.txt"
-
-    lines = [f"file '{clip.resolve().as_posix()}'" for clip in clips]
-    list_file.write_text("".join(lines) + "", encoding="utf-8")
-
-    logger.info("Concat file content:%s", list_file.read_text(encoding="utf-8"))
+    content = "
+".join(f"file '{clip.resolve().as_posix()}'" for clip in clips) + "
+"
+    list_file.write_text(content, encoding="utf-8")
 
     run_ffmpeg([
         "ffmpeg", "-y",
@@ -287,7 +287,6 @@ def concat_clips(clips: List[Path], out_path: Path):
         "-c", "copy",
         str(out_path)
     ])
-
 
 def add_music(video_path: Path, music_path: Path | None, volume: float, out_path: Path):
     if music_path and music_path.exists():
