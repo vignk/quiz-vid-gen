@@ -6,6 +6,7 @@ import tempfile
 import uuid
 import logging
 import sys
+import random
 from pathlib import Path
 from typing import List
 
@@ -151,51 +152,148 @@ def make_outro_screen(text: str, width: int, height: int, work_dir: Path) -> Pat
     return path
 
 
+#def make_question_images(idx: int, row: QuizRow, width: int, height: int, watermark: str, work_dir: Path):
+  #  def render(include_answer: bool):
+     #   img = Image.new("RGB", (width, height), (247, 242, 230))
+ #       draw = ImageDraw.Draw(img)
+
+  #      title_font = get_font(28, True)
+  #      q_font = get_font(36, True)
+   #     opt_font = get_font(26, False)
+   #     ans_font = get_font(30, True)
+  #      small_font = get_font(18, False)
+
+   #     draw.rounded_rectangle((28, 28, width - 28, height - 28), radius=28, fill=(255, 252, 246), outline=(18, 88, 104), width=3)
+   #     draw.text((50, 50), f"Question {idx}", fill=(18, 88, 104), font=title_font)
+
+    #    y = 130
+    #    for line in wrap_text(draw, row.question, q_font, width - 100):
+    #        draw.text((50, y), line, fill=(25, 25, 25), font=q_font)
+    #        y += 48
+
+   #     y += 16
+     #   options = [row.option_a, row.option_b, row.option_c, row.option_d]
+   #     colors = [(210, 80, 60), (60, 140, 80), (110, 70, 170), (210, 145, 20)]
+
+      #  for i, opt in enumerate([o for o in options if o.strip()]):
+      #      draw.rounded_rectangle((50, y, width - 50, y + 70), radius=18, fill=(243, 246, 249), outline=colors[i % 4], width=2)
+       #     draw.ellipse((65, y + 16, 100, y + 51), fill=colors[i % 4])
+       #     draw.text((76, y + 15), chr(65 + i), fill=(255, 255, 255), font=get_font(18, True))
+
+       #     lines = wrap_text(draw, opt, opt_font, width - 170)
+       #     oy = y + 12
+       #     for line in lines[:2]:
+        #        draw.text((120, oy), line, fill=(55, 55, 55), font=opt_font)
+         #       oy += 28
+
+       #     y += 88
+
+      #  if include_answer and row.answer.strip():
+       #     ay = height - 150
+      #      draw.rounded_rectangle((50, ay, width - 50, ay + 80), radius=20, fill=(18, 88, 104))
+       #     draw.text((72, ay + 23), f"Answer: {row.answer}", fill=(255, 255, 255), font=ans_font)
+
+      #  if watermark.strip():
+       #     bbox = draw.textbbox((0, 0), watermark, font=small_font)
+      #      tw = bbox[2] - bbox[0]
+       #     draw.text((width - tw - 35, height - 40), watermark, fill=(125, 125, 125), font=small_font)
+
+      #  return img
+
+ #   base_path = work_dir / f"q_{idx:03d}_base.png"
+ #   answer_path = work_dir / f"q_{idx:03d}_answer.png"
+   # render(False).save(base_path, quality=90)
+  #  render(True).save(answer_path, quality=90)
+  #  return base_path, answer_path
+
 def make_question_images(idx: int, row: QuizRow, width: int, height: int, watermark: str, work_dir: Path):
+    bg_palette = [
+        (247, 242, 230),
+        (235, 245, 255),
+        (243, 236, 255),
+        (236, 250, 240),
+        (255, 241, 232),
+        (252, 248, 220),
+    ]
+
+    option_bg_palette = [
+        (243, 246, 249),
+        (245, 242, 255),
+        (240, 248, 244),
+        (255, 246, 235),
+    ]
+
+    selected_bg = random.choice(bg_palette)
+
     def render(include_answer: bool):
-        img = Image.new("RGB", (width, height), (247, 242, 230))
+        img = Image.new("RGB", (width, height), selected_bg)
         draw = ImageDraw.Draw(img)
 
-        title_font = get_font(28, True)
-        q_font = get_font(36, True)
-        opt_font = get_font(26, False)
-        ans_font = get_font(30, True)
-        small_font = get_font(18, False)
+        title_font = get_font(30, True)
+        q_font = get_font(40, True)
+        opt_font = get_font(32, False)
+        ans_font = get_font(36, True)
+        small_font = get_font(20, False)
+        badge_font = get_font(22, True)
 
-        draw.rounded_rectangle((28, 28, width - 28, height - 28), radius=28, fill=(255, 252, 246), outline=(18, 88, 104), width=3)
+        draw.rounded_rectangle(
+            (28, 28, width - 28, height - 28),
+            radius=28,
+            fill=(255, 252, 246),
+            outline=(18, 88, 104),
+            width=3
+        )
         draw.text((50, 50), f"Question {idx}", fill=(18, 88, 104), font=title_font)
 
         y = 130
         for line in wrap_text(draw, row.question, q_font, width - 100):
             draw.text((50, y), line, fill=(25, 25, 25), font=q_font)
-            y += 48
+            y += 54
 
-        y += 16
+        y += 20
         options = [row.option_a, row.option_b, row.option_c, row.option_d]
         colors = [(210, 80, 60), (60, 140, 80), (110, 70, 170), (210, 145, 20)]
 
         for i, opt in enumerate([o for o in options if o.strip()]):
-            draw.rounded_rectangle((50, y, width - 50, y + 70), radius=18, fill=(243, 246, 249), outline=colors[i % 4], width=2)
-            draw.ellipse((65, y + 16, 100, y + 51), fill=colors[i % 4])
-            draw.text((76, y + 15), chr(65 + i), fill=(255, 255, 255), font=get_font(18, True))
+            option_fill = option_bg_palette[i % len(option_bg_palette)]
 
-            lines = wrap_text(draw, opt, opt_font, width - 170)
-            oy = y + 12
+            draw.rounded_rectangle(
+                (50, y, width - 50, y + 92),
+                radius=20,
+                fill=option_fill,
+                outline=colors[i % 4],
+                width=3
+            )
+
+            draw.ellipse((65, y + 22, 108, y + 65), fill=colors[i % 4])
+            draw.text((79, y + 24), chr(65 + i), fill=(255, 255, 255), font=badge_font)
+
+            lines = wrap_text(draw, opt, opt_font, width - 185)
+            oy = y + 16
             for line in lines[:2]:
-                draw.text((120, oy), line, fill=(55, 55, 55), font=opt_font)
-                oy += 28
+                draw.text((128, oy), line, fill=(55, 55, 55), font=opt_font)
+                oy += 34
 
-            y += 88
+            y += 112
 
         if include_answer and row.answer.strip():
-            ay = height - 150
-            draw.rounded_rectangle((50, ay, width - 50, ay + 80), radius=20, fill=(18, 88, 104))
-            draw.text((72, ay + 23), f"Answer: {row.answer}", fill=(255, 255, 255), font=ans_font)
+            ay = height - 190
+            draw.rounded_rectangle(
+                (45, ay, width - 45, ay + 110),
+                radius=24,
+                fill=(18, 88, 104)
+            )
+            draw.text(
+                (70, ay + 31),
+                f"Answer: {row.answer}",
+                fill=(255, 255, 255),
+                font=ans_font
+            )
 
         if watermark.strip():
             bbox = draw.textbbox((0, 0), watermark, font=small_font)
             tw = bbox[2] - bbox[0]
-            draw.text((width - tw - 35, height - 40), watermark, fill=(125, 125, 125), font=small_font)
+            draw.text((width - tw - 35, height - 42), watermark, fill=(125, 125, 125), font=small_font)
 
         return img
 
@@ -204,8 +302,7 @@ def make_question_images(idx: int, row: QuizRow, width: int, height: int, waterm
     render(False).save(base_path, quality=90)
     render(True).save(answer_path, quality=90)
     return base_path, answer_path
-
-
+    
 #def run_ffmpeg(cmd):
   #  subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 def run_ffmpeg(cmd):
