@@ -497,7 +497,7 @@ async def generate_video(
         for idx, row in enumerate(quiz_rows, start=1):
             base_png, answer_png = make_question_images(idx, row, width, height, watermark, work_dir)
             clip_path = work_dir / f"clip_{idx:03d}.mp4"
-            question_to_clip(base_png, answer_png, 6, 4, width, height, clip_path)
+            question_to_clip(base_png, answer_png, 30, 4, width, height, clip_path)
             clips.append(clip_path)
 
         clips.append(outro_clip)
