@@ -27,6 +27,31 @@ OUT_DIR.mkdir(exist_ok=True)
 
 app.mount("/files", StaticFiles(directory=str(OUT_DIR)), name="files")
 
+def draw_star(draw, x, y, color, size=34):
+    font = get_font(size, True)
+    draw.text((x, y), "✦", fill=color, font=font)
+
+def draw_balloon(draw, x, y, color):
+    draw.ellipse((x, y, x + 30, y + 38), fill=color, outline=(40, 40, 40), width=2)
+    draw.line((x + 15, y + 38, x + 14, y + 62), fill=(70, 70, 70), width=2)
+    draw.arc((x + 8, y + 58, x + 20, y + 74), start=180, end=360, fill=(70, 70, 70), width=2)
+
+def draw_confetti(draw, x, y, color):
+    draw.line((x, y, x + 10, y + 12), fill=color, width=4)
+    draw.line((x + 14, y, x + 3, y + 11), fill=color, width=4)
+
+def draw_speech_bubble(draw, x, y, fill_color):
+    draw.rounded_rectangle((x, y, x + 52, y + 34), radius=12, fill=fill_color, outline=(50, 50, 50), width=2)
+    draw.polygon([(x + 10, y + 34), (x + 18, y + 48), (x + 24, y + 34)], fill=fill_color, outline=(50, 50, 50))
+    dot_color = (50, 50, 50)
+    draw.ellipse((x + 12, y + 12, x + 17, y + 17), fill=dot_color)
+    draw.ellipse((x + 23, y + 12, x + 28, y + 17), fill=dot_color)
+    draw.ellipse((x + 34, y + 12, x + 39, y + 17), fill=dot_color)
+
+def center_text(draw, text, font, y, width, fill):
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((width - tw) // 2, y), text, fill=fill, font=font)
 
 class QuizRow(BaseModel):
     question: str
@@ -205,7 +230,7 @@ def make_outro_screen(text: str, width: int, height: int, work_dir: Path) -> Pat
    # render(False).save(base_path, quality=90)
   #  render(True).save(answer_path, quality=90)
   #  return base_path, answer_path
-
+"""
 def make_question_images(idx: int, row: QuizRow, width: int, height: int, watermark: str, work_dir: Path):
     bg_palette = [
         (247, 242, 230),
@@ -302,7 +327,160 @@ def make_question_images(idx: int, row: QuizRow, width: int, height: int, waterm
     render(False).save(base_path, quality=90)
     render(True).save(answer_path, quality=90)
     return base_path, answer_path
-    
+ """
+def make_question_images(idx: int, row: QuizRow, width: int, height: int, watermark: str, work_dir: Path):
+    bg_palette = [
+        (255, 252, 245),
+        (255, 250, 240),
+        (250, 255, 248),
+        (248, 252, 255),
+        (255, 248, 252),
+    ]
+
+    option_colors = [
+        (255, 82, 82),    # red
+        (66, 165, 245),   # blue
+        (255, 214, 64),   # yellow
+        (76, 217, 100),   # green
+    ]
+
+    clipart_colors = [
+        (255, 193, 7),
+        (66, 165, 245),
+        (244, 67, 54),
+        (76, 175, 80),
+        (171, 71, 188),
+    ]
+
+    bg_color = random.choice(bg_palette)
+
+    def render(include_answer: bool):
+        img = Image.new("RGB", (width, height), bg_color)
+        draw = ImageDraw.Draw(img)
+
+        title_font = get_font(26, True)
+        q_font = get_font(38, True)
+        opt_font = get_font(28, True)
+        ans_font = get_font(30, True)
+        small_font = get_font(18, False)
+        label_font = get_font(26, True)
+
+        draw_star(draw, 14, 120, random.choice(clipart_colors), 34)
+        draw_star(draw, 36, 182, random.choice(clipart_colors), 26)
+        draw_star(draw, width - 46, 118, random.choice(clipart_colors), 30)
+        draw_star(draw, width - 34, 520, random.choice(clipart_colors), 28)
+        draw_star(draw, 18, height - 180, random.choice(clipart_colors), 30)
+        draw_star(draw, width - 48, height - 210, random.choice(clipart_colors), 30)
+
+        draw_balloon(draw, width - 86, 62, (244, 67, 54))
+        draw_balloon(draw, width - 52, 52, (66, 165, 245))
+        draw_speech_bubble(draw, width - 72, 290, (255, 235, 59))
+
+        draw_confetti(draw, 18, 430, random.choice(clipart_colors))
+        draw_confetti(draw, 28, 438, random.choice(clipart_colors))
+        draw_confetti(draw, width - 34, 650, random.choice(clipart_colors))
+        draw_confetti(draw, width - 52, 660, random.choice(clipart_colors))
+        draw_confetti(draw, 26, height - 260, random.choice(clipart_colors))
+
+        title_text = "English Grammar Quiz"
+        center_text(draw, title_text, title_font, 58, width, (25, 25, 25))
+
+        y = 128
+        q_lines = wrap_text(draw, row.question, q_font, width - 74)
+        for line in q_lines[:3]:
+            bbox = draw.textbbox((0, 0), line, font=q_font)
+            lw = bbox[2] - bbox[0]
+            draw.text(((width - lw) // 2, y), line, fill=(15, 15, 15), font=q_font)
+            y += 50
+
+        y += 24
+        options = [row.option_a, row.option_b, row.option_c, row.option_d]
+        visible_options = [o for o in options if o.strip()]
+
+        for i, opt in enumerate(visible_options):
+            fill_color = option_colors[i % len(option_colors)]
+
+            draw.rounded_rectangle(
+                (28, y, width - 28, y + 68),
+                radius=22,
+                fill=fill_color
+            )
+
+            draw.text((48, y + 15), f"{chr(65+i)})", fill=(0, 0, 0), font=label_font)
+
+            lines = wrap_text(draw, opt, opt_font, width - 150)
+            oy = y + 14
+            for line in lines[:2]:
+                draw.text((108, oy), line, fill=(0, 0, 0), font=opt_font)
+                oy += 28
+
+            y += 86
+
+        if include_answer and row.answer.strip():
+            ay = height - 150
+            draw.rounded_rectangle(
+                (28, ay, width - 28, ay + 70),
+                radius=22,
+                fill=(18, 88, 104)
+            )
+            draw.text(
+                (46, ay + 18),
+                f"Answer: {row.answer}",
+                fill=(255, 255, 255),
+                font=ans_font
+            )
+
+        if watermark.strip():
+            bbox = draw.textbbox((0, 0), watermark, font=small_font)
+            tw = bbox[2] - bbox[0]
+            draw.text((width - tw - 20, height - 32), watermark, fill=(120, 120, 120), font=small_font)
+
+        return img
+
+    base_path = work_dir / f"q_{idx:03d}_base.png"
+    answer_path = work_dir / f"q_{idx:03d}_answer.png"
+
+    render(False).save(base_path, quality=95)
+    render(True).save(answer_path, quality=95)
+    return base_path, answer_path
+
+
+
+def image_to_clip(image_path: Path, duration: int, out_path: Path):
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+    vf = (
+        "scale=720:1280,"
+        "zoompan="
+        "z='min(zoom+0.0008,1.06)':"
+        "x='iw/2-(iw/zoom/2)':"
+        "y='ih/2-(ih/zoom/2)':"
+        "d=24*{duration}:s=720x1280:fps=24,"
+        "drawtext="
+        f"fontfile={font_path}:"
+        f"text='%{{eif\\:{duration}-t\\:d}}':"
+        "fontcolor=white:"
+        "fontsize=54:"
+        "box=1:"
+        "boxcolor=black@0.28:"
+        "boxborderw=12:"
+        "x=(w-text_w)/2:"
+        "y=80,"
+        "format=yuv420p"
+    ).format(duration=duration)
+
+    run_ffmpeg([
+        "ffmpeg", "-y",
+        "-loop", "1",
+        "-i", str(image_path),
+        "-t", str(duration),
+        "-vf", vf,
+        "-c:v", "libx264",
+        "-preset", "medium",
+        "-crf", "20",
+        "-pix_fmt", "yuv420p",
+        str(out_path)
+    ])
 #def run_ffmpeg(cmd):
   #  subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 def run_ffmpeg(cmd):
